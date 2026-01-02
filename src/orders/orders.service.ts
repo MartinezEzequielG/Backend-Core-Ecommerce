@@ -61,17 +61,22 @@ export class OrdersService {
       let subtotal = new Decimal(0);
 
       const orderItemsData = items.map((it) => {
-        if (!it.product.active) throw new BadRequestException('Producto no disponible');
-        if (!it.productVariantId) throw new BadRequestException('Item sin variante. Requiere variantId.');
+        if (!it.product.active) {
+          throw new BadRequestException('Producto no disponible');
+        }
 
-        const unitPrice = it.productVariant?.price ?? it.product.salePrice ?? it.product.basePrice;
+        const unitPrice =
+          it.productVariant?.price ??
+          it.product.salePrice ??
+          it.product.basePrice;
+
         subtotal = subtotal.add(new Decimal(unitPrice).mul(it.quantity));
 
         return {
           productId: it.productId,
-          productVariantId: it.productVariantId,
+          productVariantId: it.productVariantId ?? null,
           quantity: it.quantity,
-          unitPrice: unitPrice,
+          unitPrice,
         };
       });
 

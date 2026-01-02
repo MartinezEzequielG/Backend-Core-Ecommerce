@@ -11,6 +11,14 @@ export class ContentService {
       update: {},
       create: { id: 1, banners: [], socialLinks: [] },
     });
-    return cfg;
+
+    const settings = await this.prisma.storeSettings.findFirst();
+
+    return {
+      ...cfg,
+      logoUrl: settings?.logoUrl ?? null,
+      whatsappNumber: settings?.whatsappNumber ?? '',
+      address: settings?.address ?? '',
+    };
   }
 }

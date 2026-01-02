@@ -49,6 +49,11 @@ model Product {
   description String?
   basePrice   Decimal   @db.Decimal(10, 2)
   salePrice   Decimal?  @db.Decimal(10, 2)
+  discountTransfer Float?   // % OFF por transferencia
+  discountMp       Float?   // % OFF por MercadoPago
+  isNew            Boolean? @default(false)
+  isHot            Boolean? @default(false)
+  freeShipping     Boolean? @default(false)
   sku         String?   @unique
   active      Boolean   @default(true)
   featured    Boolean   @default(false)
@@ -286,6 +291,13 @@ model StoreSettings {
   secondaryColor String?
   contactEmail   String?
   currency       String   @default("ARS")
+  whatsappNumber String?
+  address        String?
+  ownerFullName  String?
+  ownerPhone     String?
+  ownerEmail     String?
+  documentType   String?  // Ej: "DNI", "CUIL", "CUIT", "RUT", "CPF"
+  documentNumber String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

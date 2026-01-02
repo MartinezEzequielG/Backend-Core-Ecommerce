@@ -22,6 +22,9 @@ export class AdminSiteController {
     body: {
       banners?: any[];
       socialLinks?: any[];
+      whatsappNumber?: string;
+      address?: string;
+      logoUrl?: string; // ✅ nuevo campo
     },
   ) {
     return this.service.update(body);

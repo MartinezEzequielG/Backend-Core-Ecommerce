@@ -47,6 +47,12 @@ function mapProduct(p: any) {
           : null,
       })),
     })),
+    // ⬇ AGREGA ESTOS CAMPOS
+    discountTransfer: p.discountTransfer,
+    discountMp: p.discountMp,
+    isNew: p.isNew,
+    isHot: p.isHot,
+    freeShipping: p.freeShipping,
   };
 }
 

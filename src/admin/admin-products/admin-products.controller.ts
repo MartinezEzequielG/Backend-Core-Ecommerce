@@ -39,7 +39,28 @@ export class AdminProductsController {
 
   @Get(':id')
   async byId(@Param('id', ParseIntPipe) id: number) {
-    return this.service.byId(id);
+    const p = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        images: true, 
+        variants: {
+          include: {
+            options: { include: { optionValue: true } },
+          },
+        },
+        options: { include: { values: true } },
+        // ...otros includes...
+      },
+    });
+    if (!p) return null;
+
+    return {
+      ...p,
+      variants: (p.variants || []).map((v) => ({
+        ...v,
+        stock: v.onHand,
+      })),
+    };
   }
 
   @Post()

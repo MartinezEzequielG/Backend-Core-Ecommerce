@@ -19,6 +19,7 @@ import { AdminCouponsModule } from './admin/admin-coupons/admin-coupons.module';
 import { AdminSiteModule } from './admin/admin-site/admin-site.module';
 import { ContentModule } from './content/content.module';
 import { PaymentsModule } from './payments/payments.module';
+import { AdminStoreSettingsModule } from './admin/admin-store-settings/admin-store-settings.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { PaymentsModule } from './payments/payments.module';
     AdminSiteModule,
     ContentModule,
     PaymentsModule,
+    AdminStoreSettingsModule,
   ],
   controllers: [AppController],
   providers: [
