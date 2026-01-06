@@ -22,6 +22,7 @@ const map = {
   siteconfig: "SiteConfig",
   productaudit: "ProductAudit",
   stockreservation: "StockReservation",
+  storesettings: "StoreSettings",
 };
 
 // Solo reemplazamos nombres de tablas cuando estén entre backticks: `order`
