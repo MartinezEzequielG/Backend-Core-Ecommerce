@@ -296,8 +296,11 @@ model StoreSettings {
   ownerFullName  String?
   ownerPhone     String?
   ownerEmail     String?
-  documentType   String?  // Ej: "DNI", "CUIL", "CUIT", "RUT", "CPF"
+  documentType   String?
   documentNumber String?
+
+  checkoutMode   String   @default("CATALOG") // "CATALOG" | "CART"
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

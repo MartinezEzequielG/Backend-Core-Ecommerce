@@ -19,6 +19,7 @@ export class ContentService {
       logoUrl: settings?.logoUrl ?? null,
       whatsappNumber: settings?.whatsappNumber ?? '',
       address: settings?.address ?? '',
+      checkoutMode: settings?.checkoutMode ?? 'CATALOG',
     };
   }
 }

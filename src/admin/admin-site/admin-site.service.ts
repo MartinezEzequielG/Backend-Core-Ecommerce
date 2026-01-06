@@ -18,25 +18,59 @@ export class AdminSiteService {
       logoUrl: settings?.logoUrl ?? null,
       whatsappNumber: settings?.whatsappNumber ?? '',
       address: settings?.address ?? '',
+      checkoutMode: settings?.checkoutMode ?? 'CATALOG',
     }));
   }
 
-  update(body: { banners?: any[]; socialLinks?: any[]; whatsappNumber?: string; address?: string; logoUrl?: string }) {
-    return Promise.all([
-      this.prisma.siteConfig.update({
-        where: { id: 1 },
-        data: {
-          banners: body.banners ?? [],
-          socialLinks: body.socialLinks ?? [],
-        },
-      }),
-      this.prisma.storeSettings.updateMany({
-        data: {
-          logoUrl: body.logoUrl ?? null,
-          whatsappNumber: body.whatsappNumber ?? '',
-          address: body.address ?? '',
-        },
-      }),
-    ]).then(([cfg]) => cfg);
+  async update(body: {
+    banners?: any[];
+    socialLinks?: any[];
+    whatsappNumber?: string;
+    address?: string;
+    logoUrl?: string;
+    checkoutMode?: 'CATALOG' | 'CART';
+  }) {
+    const cfg = await this.prisma.siteConfig.upsert({
+      where: { id: 1 },
+      update: {
+        ...(body.banners ? { banners: body.banners } : {}),
+        ...(body.socialLinks ? { socialLinks: body.socialLinks } : {}),
+      },
+      create: {
+        id: 1,
+        banners: body.banners ?? [],
+        socialLinks: body.socialLinks ?? [],
+      },
+    });
+
+    const existing = await this.prisma.storeSettings.findFirst();
+
+    const settings = existing
+      ? await this.prisma.storeSettings.update({
+          where: { id: existing.id },
+          data: {
+            ...(body.logoUrl !== undefined ? { logoUrl: body.logoUrl } : {}),
+            ...(body.whatsappNumber !== undefined ? { whatsappNumber: body.whatsappNumber } : {}),
+            ...(body.address !== undefined ? { address: body.address } : {}),
+            ...(body.checkoutMode !== undefined ? { checkoutMode: body.checkoutMode } : {}),
+          },
+        })
+      : await this.prisma.storeSettings.create({
+          data: {
+            name: 'Store',
+            logoUrl: body.logoUrl,
+            whatsappNumber: body.whatsappNumber,
+            address: body.address,
+            checkoutMode: body.checkoutMode ?? 'CATALOG',
+          } as any,
+        });
+
+    return {
+      ...cfg,
+      logoUrl: settings?.logoUrl ?? null,
+      whatsappNumber: settings?.whatsappNumber ?? '',
+      address: settings?.address ?? '',
+      checkoutMode: settings?.checkoutMode ?? 'CATALOG',
+    };
   }
 }

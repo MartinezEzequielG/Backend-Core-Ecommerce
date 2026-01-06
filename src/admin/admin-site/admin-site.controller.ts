@@ -24,7 +24,9 @@ export class AdminSiteController {
       socialLinks?: any[];
       whatsappNumber?: string;
       address?: string;
-      logoUrl?: string; // ✅ nuevo campo
+      logoUrl?: string;
+      // ✅ agregar
+      checkoutMode?: 'CATALOG' | 'CART';
     },
   ) {
     return this.service.update(body);
