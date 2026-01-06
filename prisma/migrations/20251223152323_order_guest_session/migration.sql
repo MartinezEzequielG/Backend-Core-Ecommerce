@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `order` ADD COLUMN `guestSessionToken` VARCHAR(128) NULL;
+ALTER TABLE `Order` ADD COLUMN `guestSessionToken` VARCHAR(128) NULL;
 
 -- CreateIndex
 CREATE INDEX `Order_guestSessionToken_createdAt_idx` ON `Order`(`guestSessionToken`, `createdAt`);
