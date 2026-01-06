@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `order` ADD COLUMN `paidAt` DATETIME(3) NULL;
+ALTER TABLE `Order` ADD COLUMN `paidAt` DATETIME(3) NULL;

@@ -1,22 +1,22 @@
 /*
   Warnings:
 
-  - You are about to alter the column `status` on the `order` table. The data in that column could be lost. The data in that column will be cast from `Enum(EnumId(1))` to `Enum(EnumId(1))`.
-  - You are about to drop the column `stock` on the `productvariant` table. All the data in the column will be lost.
+  - You are about to alter the column `status` on the `Order` table. The data in that column could be lost. The data in that column will be cast from `Enum(EnumId(1))` to `Enum(EnumId(1))`.
+  - You are about to drop the column `stock` on the `ProductVariant` table. All the data in the column will be lost.
   - A unique constraint covering the columns `[checkoutToken]` on the table `Order` will be added. If there are existing duplicate values, this will fail.
 
 */
 -- DropIndex
-DROP INDEX `ProductVariant_productId_stock_idx` ON `productvariant`;
+DROP INDEX `ProductVariant_productId_stock_idx` ON `ProductVariant`;
 
 -- AlterTable
-ALTER TABLE `order` ADD COLUMN `cancelReason` VARCHAR(191) NULL,
+ALTER TABLE `Order` ADD COLUMN `cancelReason` VARCHAR(191) NULL,
     ADD COLUMN `checkoutToken` VARCHAR(64) NULL,
     ADD COLUMN `reservedUntil` DATETIME(3) NULL,
     MODIFY `status` ENUM('CREATED', 'PENDING_PAYMENT', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'FAILED') NOT NULL DEFAULT 'PENDING_PAYMENT';
 
 -- AlterTable
-ALTER TABLE `productvariant` DROP COLUMN `stock`,
+ALTER TABLE `ProductVariant` DROP COLUMN `stock`,
     ADD COLUMN `onHand` INTEGER NOT NULL DEFAULT 0,
     ADD COLUMN `reserved` INTEGER NOT NULL DEFAULT 0;
 

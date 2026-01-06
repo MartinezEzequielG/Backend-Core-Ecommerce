@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `order` ADD COLUMN `deliveredAt` DATETIME(3) NULL,
+ALTER TABLE `Order` ADD COLUMN `deliveredAt` DATETIME(3) NULL,
     ADD COLUMN `shippedAt` DATETIME(3) NULL,
     ADD COLUMN `trackingCode` VARCHAR(191) NULL;
 
