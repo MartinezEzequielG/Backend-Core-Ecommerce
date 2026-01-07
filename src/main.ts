@@ -14,8 +14,20 @@ async function bootstrap() {
 
   app.use(helmet());
   app.use(cookieParser());
+  const allowedOrigins = (process.env.CORS_ORIGIN ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
   app.enableCors({
-    origin: true,
+    origin: (origin, callback) => {
+      // Permitir requests sin Origin (ej: curl, health checks, server-to-server)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+    },
     credentials: true,
     allowedHeaders: 'Content-Type, Authorization, x-session-id',
     exposedHeaders: 'set-cookie',
