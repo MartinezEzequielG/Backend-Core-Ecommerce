@@ -20,4 +20,4 @@ CREATE INDEX `ProductVariant_productId_active_idx` ON `ProductVariant`(`productI
 CREATE INDEX `ProductVariant_productId_stock_idx` ON `ProductVariant`(`productId`, `stock`);
 
 -- RenameIndex
-ALTER TABLE `cart` RENAME INDEX `Cart_userId_fkey` TO `Cart_userId_idx`;
+ALTER TABLE `Cart` RENAME INDEX `Cart_userId_fkey` TO `Cart_userId_idx`;
