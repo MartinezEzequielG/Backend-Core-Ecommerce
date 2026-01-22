@@ -58,6 +58,35 @@ export class AdminProductsService {
   async remove(id: number) {
     const exists = await this.prisma.product.findUnique({ where: { id } });
     if (!exists) throw new NotFoundException('Producto no encontrado');
+
+    // Verificar referencias externas
+    const [orderItems, cartItems] = await Promise.all([
+      this.prisma.orderItem.count({ where: { productId: id } }),
+      this.prisma.cartItem.count({ where: { productId: id } }),
+    ]);
+    if (orderItems > 0 || cartItems > 0) {
+      throw new BadRequestException(
+        'No se puede eliminar: el producto está referenciado en órdenes o carritos. Podés ocultarlo.',
+      );
+    }
+
+    // Borrar dependencias hijas
+    await this.prisma.productImage.deleteMany({ where: { productId: id } });
+    const variants = await this.prisma.productVariant.findMany({ where: { productId: id }, select: { id: true } });
+    const variantIds = variants.map((v) => v.id);
+    if (variantIds.length) {
+      await this.prisma.productVariantOption.deleteMany({ where: { variantId: { in: variantIds } } });
+    }
+    await this.prisma.productVariant.deleteMany({ where: { productId: id } });
+    const options = await this.prisma.productOption.findMany({ where: { productId: id }, select: { id: true } });
+    const optionIds = options.map((o) => o.id);
+    if (optionIds.length) {
+      await this.prisma.productOptionValue.deleteMany({ where: { optionId: { in: optionIds } } });
+    }
+    await this.prisma.productOption.deleteMany({ where: { productId: id } });
+    await this.prisma.productAudit.deleteMany({ where: { productId: id } });
+
+    // Borrar el producto
     return this.prisma.product.delete({ where: { id } });
   }
 
