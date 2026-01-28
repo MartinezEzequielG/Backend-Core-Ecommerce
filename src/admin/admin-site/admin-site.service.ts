@@ -29,6 +29,9 @@ export class AdminSiteService {
     address?: string;
     logoUrl?: string;
     checkoutMode?: 'CATALOG' | 'CART';
+    heroVideoUrl?: string;
+    heroImageUrl?: string;
+    heroMode?: 'video' | 'image' | 'none';
   }) {
     const cfg = await this.prisma.siteConfig.upsert({
       where: { id: 1 },
@@ -53,6 +56,9 @@ export class AdminSiteService {
             ...(body.whatsappNumber !== undefined ? { whatsappNumber: body.whatsappNumber } : {}),
             ...(body.address !== undefined ? { address: body.address } : {}),
             ...(body.checkoutMode !== undefined ? { checkoutMode: body.checkoutMode } : {}),
+            ...(body.heroVideoUrl !== undefined ? { heroVideoUrl: body.heroVideoUrl } : {}),
+            ...(body.heroImageUrl !== undefined ? { heroImageUrl: body.heroImageUrl } : {}),
+            ...(body.heroMode !== undefined ? { heroMode: body.heroMode } : {}),
           },
         })
       : await this.prisma.storeSettings.create({
@@ -62,15 +68,15 @@ export class AdminSiteService {
             whatsappNumber: body.whatsappNumber,
             address: body.address,
             checkoutMode: body.checkoutMode ?? 'CATALOG',
+            heroVideoUrl: body.heroVideoUrl ?? '',
+            heroImageUrl: body.heroImageUrl ?? '',
+            heroMode: body.heroMode ?? 'video',
           } as any,
         });
 
     return {
       ...cfg,
-      logoUrl: settings?.logoUrl ?? null,
-      whatsappNumber: settings?.whatsappNumber ?? '',
-      address: settings?.address ?? '',
-      checkoutMode: settings?.checkoutMode ?? 'CATALOG',
+      ...settings,
     };
   }
 }

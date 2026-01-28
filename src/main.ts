@@ -12,33 +12,36 @@ import bodyParser from 'body-parser';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Si estás detrás de Nginx/ALB/CloudFront, esto ayuda a:
+  // - req.ip correcto (rate limit)
+  // - cookies secure en algunos escenarios
+  app.set('trust proxy', 1);
+
   app.use(helmet());
   app.use(cookieParser());
+
   const allowedOrigins = (process.env.CORS_ORIGIN ?? '')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   app.enableCors({
     origin: (origin, callback) => {
-      // Permitir requests sin Origin (ej: curl, health checks, server-to-server)
       if (!origin) return callback(null, true);
-
       if (allowedOrigins.includes(origin)) return callback(null, true);
-
       return callback(new Error(`CORS blocked for origin: ${origin}`), false);
     },
     credentials: true,
-    allowedHeaders: 'Content-Type, Authorization, x-session-id',
+    allowedHeaders: 'Content-Type, Authorization, x-session-id, x-csrf-token',
     exposedHeaders: 'set-cookie',
   });
+
   app.setGlobalPrefix('api');
 
-  // Versionado: /api/V1/...
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
-    prefix: 'V', // usa 'v' si preferís /api/v1
+    prefix: 'V',
   });
 
   app.useGlobalPipes(
@@ -56,11 +59,15 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build();
+
   const doc = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, doc);
 
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
+
+  // webhook raw
   app.use('/api/V1/payments/webhook', bodyParser.raw({ type: '*/*' }));
+
   await app.listen(process.env.PORT ? Number(process.env.PORT) : 3001);
 }
 bootstrap();

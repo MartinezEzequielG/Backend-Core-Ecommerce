@@ -298,6 +298,9 @@ model StoreSettings {
   ownerEmail     String?
   documentType   String?
   documentNumber String?
+  heroVideoUrl  String?
+  heroImageUrl  String?
+  heroMode      String?
 
   checkoutMode   String   @default("CATALOG") // "CATALOG" | "CART"
 

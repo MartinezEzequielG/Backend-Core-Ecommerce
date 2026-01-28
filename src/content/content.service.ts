@@ -20,6 +20,9 @@ export class ContentService {
       whatsappNumber: settings?.whatsappNumber ?? '',
       address: settings?.address ?? '',
       checkoutMode: settings?.checkoutMode ?? 'CATALOG',
+      heroVideoUrl: settings?.heroVideoUrl ?? '',
+      heroImageUrl: settings?.heroImageUrl ?? '',
+      heroMode: settings?.heroMode ?? 'video',
     };
   }
 }
