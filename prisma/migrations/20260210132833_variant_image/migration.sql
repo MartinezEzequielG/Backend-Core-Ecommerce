@@ -1,5 +1,5 @@
 -- AlterTable
-ALTER TABLE `productvariant` ADD COLUMN `imageId` INTEGER NULL;
+ALTER TABLE `ProductVariant` ADD COLUMN `imageId` INTEGER NULL;
 
 -- CreateIndex
 CREATE INDEX `ProductVariant_imageId_idx` ON `ProductVariant`(`imageId`);
