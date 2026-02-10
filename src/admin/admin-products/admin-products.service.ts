@@ -112,10 +112,10 @@ export class AdminProductsService {
       stock?: number;
       active?: boolean;
       optionValueIds?: number[];
+      imageId?: number | null;
     },
   ) {
     const { optionValueIds = [], ...rest } = data;
-    console.log('upsertVariant backend', { optionValueIds }); // <--- agrega esto
 
     if (data.id) {
       return this.prisma.$transaction(async (tx) => {
@@ -124,8 +124,9 @@ export class AdminProductsService {
           data: {
             sku: rest.sku ?? null,
             price: rest.price ?? null,
-            onHand: rest.stock ?? 0, // <--- aquí debe mapear stock a onHand
+            onHand: rest.stock ?? 0,
             active: rest.active ?? true,
+            imageId: rest.imageId ?? null, // ✅
           },
         });
 
@@ -149,8 +150,9 @@ export class AdminProductsService {
           productId,
           sku: rest.sku ?? null,
           price: rest.price ?? null,
-          onHand: rest.stock ?? 0, // <--- aquí debe mapear stock a onHand
+          onHand: rest.stock ?? 0,
           active: rest.active ?? true,
+          imageId: rest.imageId ?? null, // ✅
         },
       });
 

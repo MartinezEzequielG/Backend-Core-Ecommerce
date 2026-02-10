@@ -35,6 +35,7 @@ function mapProduct(p: any) {
     // ⬇ Variantes con sus valores de opción
     variants: (p.variants || []).map((v: any) => ({
       ...v,
+      imageUrl: v.image?.url ?? null,
       stock: {
         available: Math.max(0, (v.onHand ?? 0) - (v.reserved ?? 0)),
         onHand: v.onHand ?? 0,
@@ -112,6 +113,7 @@ export class ProductsService {
         variants: {
           where: { active: true },
           include: {
+            image: true, // ✅
             options: {
               include: {
                 optionValue: true, // valor de atributo, ej "Rojo", "M"

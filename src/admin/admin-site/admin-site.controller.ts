@@ -25,8 +25,12 @@ export class AdminSiteController {
       whatsappNumber?: string;
       address?: string;
       logoUrl?: string;
-      // ✅ agregar
+
       checkoutMode?: 'CATALOG' | 'CART';
+
+      heroVideoUrl?: string;
+      heroImageUrl?: string;
+      heroMode?: 'video' | 'image' | 'none';
     },
   ) {
     return this.service.update(body);

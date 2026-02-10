@@ -5,21 +5,25 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class AdminSiteService {
   constructor(private prisma: PrismaService) {}
 
-  get() {
-    return Promise.all([
-      this.prisma.siteConfig.upsert({
-        where: { id: 1 },
-        update: {},
-        create: { id: 1, banners: [], socialLinks: [] },
-      }),
-      this.prisma.storeSettings.findFirst(),
-    ]).then(([cfg, settings]) => ({
+  async get() {
+    const cfg = await this.prisma.siteConfig.upsert({
+      where: { id: 1 },
+      update: {},
+      create: { id: 1, banners: [], socialLinks: [] },
+    });
+
+    const settings = await this.prisma.storeSettings.findFirst();
+
+    return {
       ...cfg,
       logoUrl: settings?.logoUrl ?? null,
       whatsappNumber: settings?.whatsappNumber ?? '',
       address: settings?.address ?? '',
       checkoutMode: settings?.checkoutMode ?? 'CATALOG',
-    }));
+      heroVideoUrl: settings?.heroVideoUrl ?? '',
+      heroImageUrl: settings?.heroImageUrl ?? '',
+      heroMode: settings?.heroMode ?? 'video',
+    };
   }
 
   async update(body: {
