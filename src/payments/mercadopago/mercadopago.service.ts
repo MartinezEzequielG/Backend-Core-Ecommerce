@@ -75,6 +75,19 @@ export class MercadoPagoService {
       },
     };
 
+    const pm = String(order.paymentMethod || '').toUpperCase();
+
+    if (pm === 'MP_TRANSFER') {
+      body.payment_methods = {
+        excluded_payment_types: [
+          { id: 'credit_card' },
+          { id: 'debit_card' },
+          { id: 'ticket' },
+          { id: 'atm' },
+        ],
+      };
+    }
+
     if (!mpPreferSandbox()) {
       body.notification_url = `${apiBase}/payments/webhook`;
       body.auto_return = 'approved';

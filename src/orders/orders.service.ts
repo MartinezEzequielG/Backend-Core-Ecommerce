@@ -5,10 +5,42 @@ import { PrismaService } from '../prisma/prisma.service';
 type CreateCheckoutDto = {
   checkoutToken: string;
   guestSessionToken?: string;
-  shipping: { fullName: string; email?: string; phone: string; street: string; city: string; state: string; zip?: string; country?: string };
+  shipping: {
+    fullName: string;
+    email?: string;
+    phone: string;
+    street: string;
+    city: string;
+    state: string;
+    zip?: string;
+    country?: string;
+    documentNumber?: string; // ✅ acepta
+  };
+  billing?: {
+    fullName: string;
+    email?: string;
+    phone: string;
+    street: string;
+    city: string;
+    state: string;
+    zip?: string;
+    country?: string;
+    documentNumber?: string;
+  }; // ✅ acepta
   shippingCost: number;
   paymentMethod?: string;
 };
+
+function normPm(pm?: string) {
+  return String(pm || '').trim().toUpperCase();
+}
+
+function applyPct(price: Prisma.Decimal, pct?: number | null) {
+  const p = Number(pct ?? 0);
+  if (!Number.isFinite(p) || p <= 0) return price;
+  // 2 decimales (tu schema usa Decimal(10,2))
+  return price.mul(new Prisma.Decimal(1).minus(new Prisma.Decimal(p).div(100))).toDecimalPlaces(2);
+}
 
 @Injectable()
 export class OrdersService {
@@ -21,6 +53,8 @@ export class OrdersService {
     const expiresAt = new Date(Date.now() + ttl * 60 * 1000);
 
     if (!dto.checkoutToken) throw new BadRequestException('checkoutToken requerido.');
+
+    const pm = normPm(dto.paymentMethod);
 
     return this.prisma.$transaction(async (tx) => {
       // 1) Idempotencia
@@ -61,22 +95,30 @@ export class OrdersService {
       let subtotal = new Decimal(0);
 
       const orderItemsData = items.map((it) => {
-        if (!it.product.active) {
-          throw new BadRequestException('Producto no disponible');
-        }
+        if (!it.product.active) throw new BadRequestException('Producto no disponible');
 
-        const unitPrice =
-          it.productVariant?.price ??
-          it.product.salePrice ??
-          it.product.basePrice;
+        const base = new Prisma.Decimal(
+          it.productVariant?.price ?? it.product.salePrice ?? it.product.basePrice
+        );
 
-        subtotal = subtotal.add(new Decimal(unitPrice).mul(it.quantity));
+        // ✅ regla de descuentos por método
+        const discountPct =
+          pm === 'COD' || pm === 'TRANSFER' || pm === 'MP_TRANSFER'
+            ? it.product.discountTransfer
+            : pm === 'MERCADOPAGO' || pm === 'MP'
+              ? it.product.discountMp
+              : null;
+
+        const unitPriceDec = applyPct(base, discountPct);
+        const unitPrice = Number(unitPriceDec);
+
+        subtotal = subtotal.add(unitPriceDec.mul(it.quantity));
 
         return {
           productId: it.productId,
           productVariantId: it.productVariantId ?? null,
           quantity: it.quantity,
-          unitPrice,
+          unitPrice, // Prisma acepta number para Decimal
         };
       });
 
@@ -95,20 +137,64 @@ export class OrdersService {
           paymentMethod: dto.paymentMethod ?? null,
           reservedUntil: expiresAt,
           items: { create: orderItemsData },
-          shippingAddress: {
-            create: {
-              fullName: dto.shipping.fullName,
-              email: dto.shipping.email ?? null,
-              phone: dto.shipping.phone,
-              street: dto.shipping.street,
-              city: dto.shipping.city,
-              state: dto.shipping.state,
-              zip: dto.shipping.zip ?? null,
-              country: dto.shipping.country ?? 'Argentina',
-            },
-          },
         },
-        include: { items: true, shippingAddress: true },
+        include: { items: true, shippingAddress: true, billingAddress: true },
+      });
+
+      // 2) Shipping: upsert por orderId (idempotente)
+      await tx.shippingAddress.upsert({
+        where: { orderId: order.id },
+        create: {
+          orderId: order.id,
+          fullName: dto.shipping.fullName,
+          email: dto.shipping.email ?? null,
+          phone: dto.shipping.phone,
+          street: dto.shipping.street,
+          city: dto.shipping.city,
+          state: dto.shipping.state,
+          zip: dto.shipping.zip ?? null,
+          country: dto.shipping.country ?? 'AR',
+        },
+        update: {
+          fullName: dto.shipping.fullName,
+          email: dto.shipping.email ?? null,
+          phone: dto.shipping.phone,
+          street: dto.shipping.street,
+          city: dto.shipping.city,
+          state: dto.shipping.state,
+          zip: dto.shipping.zip ?? null,
+          country: dto.shipping.country ?? 'AR',
+        },
+      });
+
+      // 3) Billing: upsert; si no viene billing, usar shipping
+      const b = dto.billing ?? dto.shipping;
+
+      await tx.billingAddress.upsert({
+        where: { orderId: order.id },
+        create: {
+          orderId: order.id,
+          fullName: b.fullName,
+          email: b.email ?? null,
+          phone: b.phone,
+          street: b.street,
+          city: b.city,
+          state: b.state,
+          zip: b.zip ?? null,
+          country: b.country ?? 'AR',
+          documentNumber: (b as any).documentNumber ?? null,
+        },
+        update: {
+          fullName: b.fullName,
+          email: b.email ?? null,
+          phone: b.phone,
+          street: b.street,
+          city: b.city,
+          state: b.state,
+          zip: b.zip ?? null,
+          country: b.country ?? 'AR',
+          documentNumber: (b as any).documentNumber ?? null,
+        },
       });
 
       // 5) Reservar stock (ATÓMICO)
@@ -165,6 +251,7 @@ export class OrdersService {
           },
         },
         shippingAddress: true,
+        billingAddress: true, // ✅ nuevo
       },
     });
 

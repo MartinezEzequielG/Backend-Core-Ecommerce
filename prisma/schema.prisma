@@ -185,7 +185,6 @@ model Order {
   externalRef   String? @unique
 
   checkoutToken String? @unique @db.VarChar(64)
-
   guestSessionToken String? @db.VarChar(128)
 
   reservedUntil DateTime?
@@ -202,6 +201,7 @@ model Order {
   user            User?             @relation(fields: [userId], references: [id])
   items           OrderItem[]
   shippingAddress ShippingAddress?
+  billingAddress  BillingAddress?
   reservation     StockReservation? @relation("OrderReservation")
 
   @@index([userId, createdAt])
@@ -239,13 +239,31 @@ model ShippingAddress {
   orderId Int @unique
 
   fullName String
-  email    String? @db.VarChar(191) // nota: nuevo
+  email    String? @db.VarChar(191)
   phone    String
   street   String
   city     String
   state    String
   zip      String?
   country  String
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model BillingAddress {
+  id      Int @id @default(autoincrement())
+  orderId Int @unique
+
+  fullName String
+  email    String? @db.VarChar(191)
+  phone    String
+  street   String
+  city     String
+  state    String
+  zip      String?
+  country  String
+
+  documentNumber String? @db.VarChar(64)
 
   order Order @relation(fields: [orderId], references: [id])
 }
