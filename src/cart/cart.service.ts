@@ -28,8 +28,10 @@ export class CartService {
       ? await this.ensureUserCart(params.userId)
       : await this.ensureSessionCart(String(params.sessionToken));
 
+    const cartId = cart.id;
+
     const items = await this.prisma.cartItem.findMany({
-      where: { cartId: cart.id },
+      where: { cartId },
       include: {
         product: {
           select: {
@@ -63,6 +65,18 @@ export class CartService {
       orderBy: { id: 'asc' },
     });
 
+    const cartData = await this.prisma.cart.findUnique({
+      where: { id: cartId },
+      include: {
+        items: {
+          include: {
+            product: { include: { images: true } },
+            productVariant: { include: { image: true } }, // ✅
+          },
+        },
+      },
+    });
+
     return {
       id: cart.id,
       items: items.map((it) => ({
@@ -77,6 +91,7 @@ export class CartService {
             }
           : null,
       })),
+      cartData,
     };
   }
 
