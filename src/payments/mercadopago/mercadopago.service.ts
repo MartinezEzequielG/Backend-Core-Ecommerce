@@ -57,12 +57,12 @@ export class MercadoPagoService {
 
     if (!/^https:\/\//i.test(pub) || /localhost|127\.0\.0\.1/i.test(pub)) {
       throw new BadRequestException(
-        `BACKEND_PUBLIC_URL inválida para MercadoPago: "${pub}". Usá el https de ngrok.`,
+        `BACKEND_PUBLIC_URL inválida para MercadoPago: "${pub}". Configurá una URL pública https (dominio).`,
       );
     }
 
-    // ✅ IMPORTANTE: usar api/v1 (minúsculas) consistente con el resto del proyecto
-    const apiBase = `${pub}/api/v1`;
+    // ✅ Debe matchear tu versioning real: /api/V1
+    const apiBase = `${pub}/api/V1`;
 
     const body: any = {
       external_reference: externalRef,

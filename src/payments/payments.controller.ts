@@ -108,7 +108,10 @@ export class PaymentsController {
     @Query() q: any,
     @Res() res: any,
   ) {
-    const storeLocal = (process.env.STORE_LOCAL_URL || 'http://localhost:3002').replace(/\/+$/, '');
+    const storeBase =
+      process.env.STORE_LOCAL_URL ||
+      process.env.STORE_PUBLIC_URL ||
+      'http://localhost:3002';
 
     const paymentId = String(q?.payment_id || q?.collection_id || '');
     const status = String(q?.status || q?.collection_status || '');
@@ -129,7 +132,7 @@ export class PaymentsController {
       }
     }
 
-    const url = new URL(`/orders/${orderId}`, storeLocal);
+    const url = new URL(`/orders/${orderId}`, storeBase.replace(/\/+$/, ''));
     url.searchParams.set('mp', result);
     if (paymentId) url.searchParams.set('payment_id', paymentId);
     if (status) url.searchParams.set('status', status);
