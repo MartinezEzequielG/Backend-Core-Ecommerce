@@ -62,7 +62,7 @@ export class AdminProductsController {
         images: true,
         variants: {
           include: {
-            image: true, // ✅ CLAVE: imagen asociada a variante
+            image: true,
             options: { include: { optionValue: true } },
           },
           orderBy: { id: 'asc' },
@@ -78,7 +78,7 @@ export class AdminProductsController {
       variants: (p.variants || []).map((v) => ({
         ...v,
         stock: v.onHand,
-        imageUrl: v.image?.url ?? null, // ✅ Helper para front
+        imageUrl: v.image?.url ?? null,
       })),
     };
   }
@@ -156,6 +156,16 @@ export class AdminProductsController {
     return this.service.reorderImages(productId, orders);
   }
 
+  @Get(':id/images')
+  getImages(@Param('id', ParseIntPipe) id: number) {
+    return this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        images: true,
+      },
+    });
+  }
+
   // =========================================================
   // VARIANTS
   // =========================================================
@@ -170,7 +180,7 @@ export class AdminProductsController {
       stock?: number;
       active?: boolean;
       optionValueIds?: number[];
-      imageId?: number | null; // ✅ NUEVO
+      imageId?: number | null;
     },
   ) {
     return this.service.upsertVariant(productId, {
@@ -180,13 +190,29 @@ export class AdminProductsController {
       stock: body.stock ?? 0,
       active: body.active ?? true,
       optionValueIds: body.optionValueIds ?? [],
-      imageId: body.imageId ?? null, // ✅ CLAVE
+      imageId: body.imageId ?? null,
     });
   }
 
   @Delete('variants/:variantId')
   removeVariant(@Param('variantId', ParseIntPipe) variantId: number) {
     return this.service.removeVariant(variantId);
+  }
+
+  @Get(':id/variants')
+  getVariants(@Param('id', ParseIntPipe) id: number) {
+    return this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        variants: {
+          include: {
+            image: true,
+            options: { include: { optionValue: true } },
+          },
+          orderBy: { id: 'asc' },
+        },
+      },
+    });
   }
 
   // =========================================================

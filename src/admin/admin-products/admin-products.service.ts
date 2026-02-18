@@ -102,6 +102,13 @@ export class AdminProductsService {
     return this.prisma.$transaction(tx);
   }
 
+  // ✅ AGREGAR ESTE MÉTODO
+  removeImage(productId: number, imageId: number) {
+    return this.prisma.productImage.delete({
+      where: { id: imageId },
+    });
+  }
+
   // Variantes
   upsertVariant(
     productId: number,
