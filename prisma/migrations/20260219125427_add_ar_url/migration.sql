@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `product` ADD COLUMN `arUrl` TEXT NULL;
+ALTER TABLE `Product` ADD COLUMN `arUrl` TEXT NULL;
