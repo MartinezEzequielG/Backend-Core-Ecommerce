@@ -62,6 +62,8 @@ function mapProduct(p: any) {
     isNew: !!p.isNew,
     isHot: !!p.isHot,
     freeShipping: !!p.freeShipping,
+
+    arUrl: p.arUrl ?? null,
   };
 }
 

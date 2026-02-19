@@ -67,6 +67,7 @@ model Product {
   variants   ProductVariant[]
   orderItems OrderItem[]
   cartItems  CartItem[]
+  arUrl String? @db.Text
 
   productAudits ProductAudit[]
 
