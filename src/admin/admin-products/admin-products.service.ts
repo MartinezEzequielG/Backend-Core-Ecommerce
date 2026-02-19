@@ -120,6 +120,7 @@ export class AdminProductsService {
       active?: boolean;
       optionValueIds?: number[];
       imageId?: number | null;
+      arUrl?: string | null; // ✅
     },
   ) {
     const { optionValueIds = [], ...rest } = data;
@@ -134,6 +135,7 @@ export class AdminProductsService {
             onHand: rest.stock ?? 0,
             active: rest.active ?? true,
             imageId: rest.imageId ?? null, // ✅
+            arUrl: rest.arUrl ?? null, // ✅
           },
         });
 
@@ -160,6 +162,7 @@ export class AdminProductsService {
           onHand: rest.stock ?? 0,
           active: rest.active ?? true,
           imageId: rest.imageId ?? null, // ✅
+          arUrl: rest.arUrl ?? null, // ✅
         },
       });
 

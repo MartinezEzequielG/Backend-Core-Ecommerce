@@ -79,6 +79,7 @@ export class AdminProductsController {
         ...v,
         stock: v.onHand,
         imageUrl: v.image?.url ?? null,
+        arUrl: v.arUrl ?? null, // ✅ incluir arUrl en la respuesta
       })),
     };
   }
@@ -181,6 +182,7 @@ export class AdminProductsController {
       active?: boolean;
       optionValueIds?: number[];
       imageId?: number | null;
+      arUrl?: string | null; // ✅ agregar este campo
     },
   ) {
     return this.service.upsertVariant(productId, {
@@ -191,6 +193,7 @@ export class AdminProductsController {
       active: body.active ?? true,
       optionValueIds: body.optionValueIds ?? [],
       imageId: body.imageId ?? null,
+      arUrl: body.arUrl ? body.arUrl.trim() : null, // ✅ pasar arUrl al service
     });
   }
 

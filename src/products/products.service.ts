@@ -42,7 +42,8 @@ function mapProduct(p: any) {
       active: v.active ?? true,
 
       imageId: v.imageId ?? null,
-      imageUrl: v.image?.url ?? null,
+      imageUrl: v.image?.url ?? null, // ✅
+      arUrl: v.arUrl ?? null, // ✅
 
       stock: {
         available: Math.max(0, Number(v.onHand ?? 0) - Number(v.reserved ?? 0)),
@@ -121,8 +122,8 @@ export class ProductsService {
           variants: {
             where: { active: true },
             include: {
-              image: true,
-              options: { include: { optionValue: true } },
+              image: true, // ✅ para imageUrl
+              options: { include: { optionValue: true } }, // ✅ para matchear combinación
             },
             orderBy: { id: 'asc' },
           },
