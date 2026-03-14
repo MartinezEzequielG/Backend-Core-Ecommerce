@@ -75,7 +75,9 @@ export class ProductsService {
     categorySlug?: string;
     skip: number;
     take: number;
-    orderBy?: Prisma.ProductOrderByWithRelationInput;
+    orderBy?:
+      | Prisma.ProductOrderByWithRelationInput
+      | Prisma.ProductOrderByWithRelationInput[];
   }) {
     const { search, categorySlug, skip, take, orderBy } = params;
 
@@ -95,12 +97,17 @@ export class ProductsService {
       ],
     };
 
+    const defaultOrderBy: Prisma.ProductOrderByWithRelationInput[] = [
+      { featured: 'desc' },
+      { createdAt: 'desc' },
+    ];
+
     const [items, total] = await this.prisma.$transaction([
       this.prisma.product.findMany({
         where,
         skip,
         take,
-        orderBy: orderBy ?? { createdAt: 'desc' },
+        orderBy: orderBy ?? defaultOrderBy,
         include: {
           images: { orderBy: { position: 'asc' }, take: 1 },
 
