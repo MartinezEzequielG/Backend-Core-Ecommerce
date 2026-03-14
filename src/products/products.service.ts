@@ -91,8 +91,8 @@ export class ProductsService {
     };
 
     const defaultOrderBy: Prisma.ProductOrderByWithRelationInput[] = [
+      { orderItems: { _count: 'desc' } },
       { featured: 'desc' },
-      { isHot: 'desc' },
       { createdAt: 'desc' },
       { id: 'desc' },
     ];
