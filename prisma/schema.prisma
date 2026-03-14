@@ -67,6 +67,7 @@ model Product {
   variants   ProductVariant[]
   orderItems OrderItem[]
   cartItems  CartItem[]
+  arUrl String? @db.Text
 
   productAudits ProductAudit[]
 
@@ -125,6 +126,7 @@ model ProductVariant {
 
   imageId Int?
   image   ProductImage? @relation("VariantImage", fields: [imageId], references: [id], onDelete: SetNull)
+  arUrl   String? @db.Text
 
   @@index([productId, active])
   @@index([productId, onHand])

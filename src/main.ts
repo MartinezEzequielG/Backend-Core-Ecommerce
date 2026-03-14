@@ -27,8 +27,13 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Permitir SSR, server-to-server y null origin
+      if (!origin || origin === 'null') {
+        return callback(null, true);
+      }
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
       return callback(new Error(`CORS blocked for origin: ${origin}`), false);
     },
     credentials: true,

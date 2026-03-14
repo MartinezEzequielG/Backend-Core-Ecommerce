@@ -102,6 +102,13 @@ export class AdminProductsService {
     return this.prisma.$transaction(tx);
   }
 
+  // ✅ AGREGAR ESTE MÉTODO
+  removeImage(productId: number, imageId: number) {
+    return this.prisma.productImage.delete({
+      where: { id: imageId },
+    });
+  }
+
   // Variantes
   upsertVariant(
     productId: number,
@@ -113,6 +120,7 @@ export class AdminProductsService {
       active?: boolean;
       optionValueIds?: number[];
       imageId?: number | null;
+      arUrl?: string | null; // ✅
     },
   ) {
     const { optionValueIds = [], ...rest } = data;
@@ -127,6 +135,7 @@ export class AdminProductsService {
             onHand: rest.stock ?? 0,
             active: rest.active ?? true,
             imageId: rest.imageId ?? null, // ✅
+            arUrl: rest.arUrl ?? null, // ✅
           },
         });
 
@@ -153,6 +162,7 @@ export class AdminProductsService {
           onHand: rest.stock ?? 0,
           active: rest.active ?? true,
           imageId: rest.imageId ?? null, // ✅
+          arUrl: rest.arUrl ?? null, // ✅
         },
       });
 
