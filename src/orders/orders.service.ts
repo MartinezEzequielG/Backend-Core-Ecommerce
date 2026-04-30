@@ -29,6 +29,8 @@ type CreateCheckoutDto = {
   }; // ✅ acepta
   shippingCost: number;
   paymentMethod?: string;
+  discount?: number; // <--- AGREGADO
+  couponCode?: string; // <--- AGREGADO
 };
 
 function normPm(pm?: string) {
@@ -123,7 +125,8 @@ export class OrdersService {
       });
 
       const shippingCost = new Decimal(dto.shippingCost || 0);
-      const total = subtotal.add(shippingCost);
+      const discount = new Decimal(dto.discount || 0); // <--- AGREGADO
+      const total = Prisma.Decimal.max(subtotal.add(shippingCost).minus(discount), new Decimal(0));
 
       // 4) Crear Order (pendiente pago) + address + items
       const order = await tx.order.create({
@@ -137,6 +140,8 @@ export class OrdersService {
           paymentMethod: dto.paymentMethod ?? null,
           reservedUntil: expiresAt,
           items: { create: orderItemsData },
+          couponCode: dto.couponCode ?? null, // <--- AGREGADO
+          discount: discount,                 // <--- AGREGADO
         },
         include: { items: true, shippingAddress: true, billingAddress: true },
       });

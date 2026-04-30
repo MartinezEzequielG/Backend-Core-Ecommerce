@@ -33,25 +33,11 @@ export class MercadoPagoService {
     const total = Number(order.total ?? 0);
     if (!Number.isFinite(total) || total <= 0) throw new BadRequestException('Total inválido');
 
+    const items = [
+      { title: `Orden #${orderId}`, quantity: 1, unit_price: Number(order.total), currency_id: 'ARS' as const },
+    ];
+
     const externalRef = `order:${orderId}`;
-
-    const safeItems =
-      Array.isArray(order.items) && order.items.length
-        ? order.items
-            .map((it: any) => {
-              const quantity = Number(it.quantity || 0);
-              const unitPrice = Number(it.unitPrice || 0);
-              const title = String(it.productName || it.title || '').trim();
-              if (!title || quantity <= 0 || unitPrice <= 0) return null;
-              return { title, quantity, unit_price: unitPrice, currency_id: 'ARS' as const };
-            })
-            .filter(Boolean)
-        : [];
-
-    const items =
-      safeItems.length > 0
-        ? safeItems
-        : [{ title: `Orden #${orderId}`, quantity: 1, unit_price: total, currency_id: 'ARS' as const }];
 
     const pub = backendPublicUrl();
 
