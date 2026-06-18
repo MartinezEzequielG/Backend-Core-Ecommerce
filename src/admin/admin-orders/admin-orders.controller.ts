@@ -9,12 +9,16 @@ import type { Response as ResType } from 'express';
 import { Res } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { OrdersService } from '../../orders/orders.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN, Role.SUPERADMIN)
 @Controller('admin/orders')
 export class AdminOrdersController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly ordersService: OrdersService,
+  ) {}
 
   @Get()
   async list(@Query() q: { status?: string; from?: string; to?: string; page?: string; limit?: string; sort?: string }) {
@@ -66,13 +70,37 @@ export class AdminOrdersController {
         shippingAddress: true,
         items: {
           include: {
-            product: { select: { id: true, name: true, slug: true } },
-            productVariant: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+            productVariant: {
+              include: {
+                options: {
+                  include: {
+                    optionValue: {
+                      include: {
+                        product: {
+                          select: {
+                            name: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },
     });
+
     if (!o) return null;
+
     return {
       ...o,
       total: Number(o.total),
@@ -127,14 +155,19 @@ export class AdminOrdersController {
     });
   }
 
+  @Patch(':id/mark-paid')
+  async markPaid(@Param('id', ParseIntPipe) id: number) {
+    return this.ordersService.markOrderPaid(id, {
+      externalRef: `ADMIN_TRANSFER_${id}_${Date.now()}`,
+      paymentMethod: 'TRANSFER',
+    });
+  }
+
   @Patch(':id')
   async updateStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateOrderStatusDto,
   ) {
-    // opcional: si querés forzar SHIPPED sólo via /ship, descomentá:
-    // if (dto.status === 'SHIPPED') throw new BadRequestException('Usá /ship para marcar como enviado');
-
     const updated = await this.prisma.order.update({
       where: { id },
       data: { status: dto.status },

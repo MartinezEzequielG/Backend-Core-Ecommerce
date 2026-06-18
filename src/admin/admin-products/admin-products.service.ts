@@ -220,8 +220,20 @@ export class AdminProductsService {
     return this.prisma.productOptionValue.create({ data: { optionId, value } });
   }
 
-  removeOption(optionId: number) {
-    return this.prisma.productOption.delete({ where: { id: optionId } });
+  async removeOption(optionId: number) {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        await tx.productOptionValue.deleteMany({ where: { optionId } });
+        return tx.productOption.delete({ where: { id: optionId } });
+      });
+    } catch (e: any) {
+      if (e?.code === 'P2003') {
+        throw new BadRequestException(
+          'No se puede eliminar la opción porque está usada por variantes. Primero eliminá las variantes (combinaciones) que la usan.',
+        );
+      }
+      throw e;
+    }
   }
 
   removeOptionValue(optionValueId: number) {

@@ -31,5 +31,5 @@ export function storePublicUrl(): string {
  * En prod: init_point.
  */
 export function mpPreferSandbox(): boolean {
-  return (process.env.MP_ENV || '').toLowerCase() === 'sandbox' || process.env.NODE_ENV !== 'production';
+  return (process.env.MP_ENV || '').toLowerCase() === 'sandbox';
 }

@@ -13,7 +13,47 @@ export class MercadoPagoService {
 
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                slug: true,
+                images: {
+                  select: {
+                    url: true,
+                    position: true,
+                  },
+                  orderBy: {
+                    position: 'asc',
+                  },
+                  take: 1,
+                },
+              },
+            },
+            productVariant: {
+              select: {
+                sku: true,
+                options: {
+                  select: {
+                    optionValue: {
+                      select: {
+                        value: true,
+                        product: {
+                          select: {
+                            name: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
     if (!order) throw new BadRequestException('Orden inexistente');
 
@@ -41,9 +81,38 @@ export class MercadoPagoService {
             .map((it: any) => {
               const quantity = Number(it.quantity || 0);
               const unitPrice = Number(it.unitPrice || 0);
-              const title = String(it.productName || it.title || '').trim();
+
+              const productName = String(it.product?.name || '').trim();
+
+              const variantLabel =
+                it.productVariant?.options
+                  ?.map((opt: any) => {
+                    const attrName = opt.optionValue?.product?.name;
+                    const value = opt.optionValue?.value;
+
+                    if (!attrName || !value) return null;
+
+                    return `${attrName}: ${value}`;
+                  })
+                  .filter(Boolean)
+                  .join(' / ') || '';
+
+              const title = variantLabel
+                ? `${productName} - ${variantLabel}`
+                : productName;
+
+              const pictureUrl = String(it.product?.images?.[0]?.url || '').trim();
+
               if (!title || quantity <= 0 || unitPrice <= 0) return null;
-              return { title, quantity, unit_price: unitPrice, currency_id: 'ARS' as const };
+
+              return {
+                title,
+                description: 'Suplementación Formosa',
+                quantity,
+                unit_price: unitPrice,
+                currency_id: 'ARS' as const,
+                ...(pictureUrl ? { picture_url: pictureUrl } : {}),
+              };
             })
             .filter(Boolean)
         : [];

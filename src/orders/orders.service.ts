@@ -246,17 +246,42 @@ export class OrdersService {
       include: {
         items: {
           include: {
-            product: { select: { id: true, name: true, slug: true, images: true } },
-            productVariant: true,
+            product: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                images: true,
+              },
+            },
+            productVariant: {
+              include: {
+                options: {
+                  include: {
+                    optionValue: {
+                      include: {
+                        product: {
+                          select: {
+                            name: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
         shippingAddress: true,
-        billingAddress: true, // ✅ nuevo
+        billingAddress: true,
       },
     });
 
     if (!order) throw new NotFoundException('Orden no encontrada');
-    if (order.guestSessionToken !== sessionToken) throw new UnauthorizedException('No autorizado');
+    if (order.guestSessionToken !== sessionToken) {
+      throw new UnauthorizedException('No autorizado');
+    }
 
     return {
       ...order,

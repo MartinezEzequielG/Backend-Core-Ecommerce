@@ -38,6 +38,8 @@ export class CartService {
             id: true,
             name: true,
             slug: true,
+            discountTransfer: true,
+            discountMp: true,
             images: { select: { url: true, position: true }, orderBy: { position: 'asc' } },
           },
         },
@@ -71,7 +73,7 @@ export class CartService {
         items: {
           include: {
             product: { include: { images: true } },
-            productVariant: { include: { image: true } }, // ✅
+            productVariant: { include: { image: true } },
           },
         },
       },
