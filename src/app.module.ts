@@ -21,6 +21,7 @@ import { ContentModule } from './content/content.module';
 import { PaymentsModule } from './payments/payments.module';
 import { AdminStoreSettingsModule } from './admin/admin-store-settings/admin-store-settings.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ShippingModule } from './shipping/shipping.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     ThrottlerModule.forRoot([
       { ttl: 60_000, limit: 120 }, // global suave (opcional)
     ]),
+    ShippingModule,
   ],
   controllers: [AppController],
   providers: [

@@ -24,7 +24,6 @@ function mapProduct(p: any) {
       position: im.position ?? null,
     })),
 
-    // ⬇ Atributos visibles en la tienda
     options: (p.options || []).map((opt: any) => ({
       id: opt.id,
       name: opt.name,
@@ -34,36 +33,30 @@ function mapProduct(p: any) {
       })),
     })),
 
-    // ⬇ Variantes normalizadas para el STORE (livianas)
     variants: (p.variants || []).map((v: any) => ({
       id: v.id,
       sku: v.sku ?? null,
       price: money(v.price),
       active: v.active ?? true,
-
       imageId: v.imageId ?? null,
-      imageUrl: v.image?.url ?? null, // ✅
-      arUrl: v.arUrl ?? null, // ✅
-
+      imageUrl: v.image?.url ?? null,
+      arUrl: v.arUrl ?? null,
       stock: {
         available: Math.max(0, Number(v.onHand ?? 0) - Number(v.reserved ?? 0)),
         onHand: Number(v.onHand ?? 0),
         reserved: Number(v.reserved ?? 0),
       },
-
       options: (v.options || []).map((vo: any) => ({
         id: vo.id,
         optionValue: vo.optionValue ? { id: vo.optionValue.id, value: vo.optionValue.value } : null,
       })),
     })),
 
-    // ⬇ Campos extra para badges/descuentos
     discountTransfer: p.discountTransfer ?? null,
     discountMp: p.discountMp ?? null,
     isNew: !!p.isNew,
     isHot: !!p.isHot,
     freeShipping: !!p.freeShipping,
-
     arUrl: p.arUrl ?? null,
   };
 }
@@ -97,11 +90,9 @@ export class ProductsService {
       ],
     };
 
-    // ✅ Orden default: destacados primero, luego más vendidos, luego orden manual, luego más nuevos.
-    // ⚠️ Si tu Product NO tiene "position", eliminá la línea { position: 'asc' }.
     const defaultOrderBy: Prisma.ProductOrderByWithRelationInput[] = [
+      { orderItems: { _count: 'desc' } },
       { featured: 'desc' },
-      { isHot: 'desc' },
       { createdAt: 'desc' },
       { id: 'desc' },
     ];
@@ -115,19 +106,15 @@ export class ProductsService {
         take,
         orderBy,
         include: {
-          // ✅ en listado: te alcanza 1 imagen (la principal)
           images: { orderBy: { position: 'asc' }, take: 1 },
-
-          // ✅ variantes para poder mostrar imagen por variante y stock
           variants: {
             where: { active: true },
             include: {
-              image: true, // ✅ para imageUrl
-              options: { include: { optionValue: true } }, // ✅ para matchear combinación
+              image: true,
+              options: { include: { optionValue: true } },
             },
             orderBy: { id: 'asc' },
           },
-
           category: { select: { id: true, name: true, slug: true } },
           options: { include: { values: true } },
         },
@@ -142,17 +129,14 @@ export class ProductsService {
     const product = await this.prisma.product.findUnique({
       where: { slug },
       include: {
-        // ✅ detalle: todas las imágenes
         images: { orderBy: { position: 'asc' } },
-
         category: true,
         options: { include: { values: true } },
-
         variants: {
           where: { active: true },
           include: {
-            image: true, // ✅ para imageUrl
-            options: { include: { optionValue: true } }, // ✅ para matchear combinación
+            image: true,
+            options: { include: { optionValue: true } },
           },
           orderBy: { id: 'asc' },
         },

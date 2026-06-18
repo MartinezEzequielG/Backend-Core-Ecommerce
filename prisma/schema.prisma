@@ -206,6 +206,9 @@ model Order {
   billingAddress  BillingAddress?
   reservation     StockReservation? @relation("OrderReservation")
 
+  couponCode String?   
+  discount   Decimal?  
+
   @@index([userId, createdAt])
   @@index([status, createdAt])
   @@index([guestSessionToken, createdAt])

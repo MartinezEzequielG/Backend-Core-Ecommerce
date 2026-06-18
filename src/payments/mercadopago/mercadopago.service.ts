@@ -73,55 +73,52 @@ export class MercadoPagoService {
     const total = Number(order.total ?? 0);
     if (!Number.isFinite(total) || total <= 0) throw new BadRequestException('Total inválido');
 
+    const items = [
+      { title: `Orden #${orderId}`, quantity: 1, unit_price: Number(order.total), currency_id: 'ARS' as const },
+    ];
+
     const externalRef = `order:${orderId}`;
 
-    const safeItems =
-      Array.isArray(order.items) && order.items.length
-        ? order.items
-            .map((it: any) => {
-              const quantity = Number(it.quantity || 0);
-              const unitPrice = Number(it.unitPrice || 0);
+const safeItems =
+  Array.isArray(order.items) && order.items.length
+    ? order.items
+        .map((it: any) => {
+          const quantity = Number(it.quantity || 0);
+          const unitPrice = Number(it.unitPrice || 0);
 
-              const productName = String(it.product?.name || '').trim();
+          const productName = String(it.product?.name || it.productName || '').trim();
 
-              const variantLabel =
-                it.productVariant?.options
-                  ?.map((opt: any) => {
-                    const attrName = opt.optionValue?.product?.name;
-                    const value = opt.optionValue?.value;
+          const variantLabel =
+            it.productVariant?.options
+              ?.map((opt: any) => {
+                const attrName = opt.optionValue?.product?.name;
+                const value = opt.optionValue?.value;
 
-                    if (!attrName || !value) return null;
+                if (!attrName || !value) return null;
 
-                    return `${attrName}: ${value}`;
-                  })
-                  .filter(Boolean)
-                  .join(' / ') || '';
+                return `${attrName}: ${value}`;
+              })
+              .filter(Boolean)
+              .join(' / ') || '';
 
-              const title = variantLabel
-                ? `${productName} - ${variantLabel}`
-                : productName;
+          const title = variantLabel
+            ? `${productName} - ${variantLabel}`
+            : productName;
 
-              const pictureUrl = String(it.product?.images?.[0]?.url || '').trim();
+          const pictureUrl = String(it.product?.images?.[0]?.url || '').trim();
 
-              if (!title || quantity <= 0 || unitPrice <= 0) return null;
+          if (!title || quantity <= 0 || unitPrice <= 0) return null;
 
-              return {
-                title,
-                description: 'Suplementación Formosa',
-                quantity,
-                unit_price: unitPrice,
-                currency_id: 'ARS' as const,
-                ...(pictureUrl ? { picture_url: pictureUrl } : {}),
-              };
-            })
-            .filter(Boolean)
-        : [];
-
-    const items =
-      safeItems.length > 0
-        ? safeItems
-        : [{ title: `Orden #${orderId}`, quantity: 1, unit_price: total, currency_id: 'ARS' as const }];
-
+          return {
+            title,
+            quantity,
+            unit_price: unitPrice,
+            currency_id: 'ARS' as const,
+            ...(pictureUrl ? { picture_url: pictureUrl } : {}),
+          };
+        })
+        .filter(Boolean)
+    : [];
     const pub = backendPublicUrl();
 
     if (!/^https:\/\//i.test(pub) || /localhost|127\.0\.0\.1/i.test(pub)) {

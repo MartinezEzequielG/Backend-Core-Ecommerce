@@ -59,4 +59,12 @@ export class CreateCheckoutDto {
   @IsOptional()
   @IsString()
   paymentMethod?: string;
+
+  @IsOptional()
+  @IsString()
+  couponCode?: string;
+
+  @IsOptional()
+  @IsNumber()
+  discount?: number;
 }

@@ -87,6 +87,8 @@ export class OrdersController {
       shipping: dto.shipping,
       shippingCost: dto.shippingCost,
       paymentMethod: dto.paymentMethod,
+      discount: dto.discount,         // <--- AGREGADO
+      couponCode: dto.couponCode,     // <--- AGREGADO
     });
   }
 
